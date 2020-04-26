@@ -16,7 +16,7 @@
 
 *	multiset跟set差别不大，区别是可以接收重复元素
 
-*   unordered_set 由链表实现
+*   unordered_set 由hashing实现, 其中的元素不按照顺序排列
 
 *********************************************************************************************/
 #include <iostream>
@@ -34,7 +34,8 @@ struct classcomp {
 	}
 };
 
-void showSet(std::set<int> theSet)
+template<typename T>
+void showSet(std::set<T> theSet)
 {
 	//std::set<int>::iterator it;
 	//for (it = theSet.begin(); it != theSet.end(); ++it)
@@ -43,7 +44,8 @@ void showSet(std::set<int> theSet)
 	for (auto x : theSet)std::cout << x << " ";
 	std::cout << std::endl;
 }
-void showMultiSet(std::multiset<int> theSet)
+template<typename T>
+void showMultiSet(std::multiset<T> theSet)
 {
 	for (auto x : theSet)std::cout << x << " ";
 	std::cout << std::endl;
@@ -110,20 +112,21 @@ int main()
 	cout << "temp set:";
 	showSet(tempset);
 
-	cout << "\nswap myset & tempset\n";
+	cout << "swap myset & tempset\n";
 	myset.swap(tempset);	//交换两个set
 	showSet(myset);
 	showSet(tempset);
 	
 	tempset.clear();  //清除
 
-	cout << "emplace 25: ";
+	cout << endl << "emplace 25: ";
 	myset.emplace(20);  //C++ 11 方法
 	showSet(myset);
 
 	/**---------------------------------------------------------------------------------------------------
 	* 容量：大小、判空
 	*/
+	cout << endl;
 	cout << "myset size: " << myset.size() << endl; //实际容量
 	cout << "myset maxe_size: " << myset.max_size() << endl;  //最大容量
 	cout << "myset is empty?：" << (myset.empty()? "true":"false") << endl;
@@ -146,18 +149,44 @@ int main()
 	std::set<int>::iterator itf = myset.find(25);
 	cout <<"\nfind 25: " <<( (itf==myset.end())? -1 : *itf ) << endl;  //如果find()返回 myset.end(), 表示没找到；否则输入找到的元素。
 	
-	cout << "set 中20的个数：" << myset.count(20) << endl;  //因为set元素都是独一无二的，所以要么1，要么0
+	cout << "\nset 中20的个数：" << myset.count(20) << endl;  //因为set元素都是独一无二的，所以要么1，要么0
 
 	/**---------------------------------------------------------------------------------------------------
-	* multiset
+	* multiset: count(); equal_range(); lower_bound(); upper_bound()
 	*/
 	std::multiset<int> myMultiset(second.begin(), second.end());
-	myMultiset.insert(20);
+	myMultiset.emplace(10);
 	myMultiset.emplace(20);
+	myMultiset.emplace(20);
+	myMultiset.emplace(30);
+	myMultiset.emplace(30);
+	myMultiset.emplace(30);
+	myMultiset.emplace(40);
 	cout << "\nMultiSet: ";
 	showMultiSet(myMultiset);
 	cout << "multiset 中20的个数：" << myMultiset.count(20) << endl;
 
+	
+	std::multiset<int>::iterator itm, itlow, itupper;
+
+	for (int i = 30; i< 40; i+=10)
+	{
+		
+		std::pair<std::multiset<int>::iterator, std::multiset<int>::iterator>retm;
+		retm = myMultiset.equal_range(i);  //当30<= i <40时， mmret->first指向30， mmret->second指向40
+		std::cout << i << " =>";
+		for (itm = retm.first; itm != retm.second; ++itm)
+			std::cout << ' ' << *itm;
+		std::cout << '\n';
+	}
+
+	itlow = myMultiset.lower_bound(30);   //指向 30 的下边界，也就是30
+	itupper = myMultiset.upper_bound(30); //指向 30 的上边界， 也就是40
+
+	//藉此，我们也可以得到key == '30'的所有元素
+	cout << endl << "key 为30的所有值：";
+	for (itm = itlow; itm != itupper; ++itm)cout << *itm << " ";
+	std::cout << '\n';
 	/**---------------------------------------------------------------------------------------------------
 	* unordered_set, unordered_multiset 不排序的set
 	*/
